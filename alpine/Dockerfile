@@ -1,3 +1,14 @@
+FROM bash:5 as builder
+
+ENV FLYWAY_VERSION 8.4.4
+
+WORKDIR /flyway
+
+RUN wget https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}.tar.gz \
+  && gzip -d flyway-commandline-${FLYWAY_VERSION}.tar.gz \
+  && tar -xf flyway-commandline-${FLYWAY_VERSION}.tar --strip-components=1 \
+  && rm flyway-commandline-${FLYWAY_VERSION}.tar
+
 FROM eclipse-temurin:11-alpine
 
 RUN apk --no-cache add --update bash openssl
@@ -7,12 +18,7 @@ WORKDIR /flyway
 
 USER flyway
 
-ENV FLYWAY_VERSION 8.4.4
-
-RUN wget https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}.tar.gz \
-  && gzip -d flyway-commandline-${FLYWAY_VERSION}.tar.gz \
-  && tar -xf flyway-commandline-${FLYWAY_VERSION}.tar --strip-components=1 \
-  && rm flyway-commandline-${FLYWAY_VERSION}.tar
+COPY --chown=flyway:flyway --from=builder /flyway /flyway
 
 ENV PATH="/flyway:${PATH}"
 
